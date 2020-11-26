@@ -7,6 +7,7 @@ import ru.profsoft.addressbook.App
 import ru.profsoft.addressbook.di.modules.AppModule
 import ru.profsoft.addressbook.di.modules.RepositoriesModule
 import ru.profsoft.addressbook.ui.MainActivity
+import ru.profsoft.addressbook.ui.profile.ProfileFragment
 import ru.profsoft.addressbook.ui.profiles.ProfilesFragment
 import javax.inject.Singleton
 
@@ -36,5 +37,5 @@ interface AppComponent {
     //activity, fragment
     fun inject(activity: MainActivity)
     fun inject(fragment: ProfilesFragment)
-
+    fun inject(fragment: ProfileFragment)
 }

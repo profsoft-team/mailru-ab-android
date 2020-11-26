@@ -3,6 +3,7 @@ package ru.profsoft.addressbook.ui.base
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
+import kotlinx.android.synthetic.main.activity_main.*
 import ru.profsoft.addressbook.ui.MainActivity
 import ru.profsoft.addressbook.viewmodels.base.BaseViewModel
 import ru.profsoft.addressbook.viewmodels.base.IViewModelState
@@ -13,6 +14,11 @@ abstract class BaseFragment<T : BaseViewModel<out IViewModelState>> : Fragment()
     open val binding: Binding? = null
     protected abstract val viewModel: T
     protected abstract val layout: Int
+
+    open val prepareToolbar: (ToolbarBuilder.() -> Unit)? = null
+
+    val toolbar
+        get() = main.toolbar
 
     abstract fun setupViews()
 
@@ -25,6 +31,11 @@ abstract class BaseFragment<T : BaseViewModel<out IViewModelState>> : Fragment()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        main.toolbarBuilder
+            .invalidate()
+            .prepare(prepareToolbar)
+            .build(main)
+
         viewModel.restoreState()
         binding?.restoreUi(savedInstanceState)
 
@@ -34,6 +45,10 @@ abstract class BaseFragment<T : BaseViewModel<out IViewModelState>> : Fragment()
 
         viewModel.observeNavigation(viewLifecycleOwner) {
             main.viewModel.navigate(it)
+        }
+
+        toolbar.setNavigationOnClickListener {
+            main.navController.popBackStack()
         }
 
         setupViews()

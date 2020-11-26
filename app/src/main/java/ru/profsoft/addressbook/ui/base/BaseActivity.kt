@@ -2,10 +2,14 @@ package ru.profsoft.addressbook.ui.base
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main.view.*
 import ru.profsoft.addressbook.R
+import ru.profsoft.addressbook.extensions.visible
 import ru.profsoft.addressbook.viewmodels.base.BaseViewModel
 import ru.profsoft.addressbook.viewmodels.base.IViewModelState
 import ru.profsoft.addressbook.viewmodels.base.NavigationCommand
@@ -14,6 +18,7 @@ abstract class BaseActivity<T : BaseViewModel<out IViewModelState>> : AppCompatA
     protected abstract val viewModel: T
     protected abstract val layout: Int
     lateinit var navController: NavController
+    val toolbarBuilder = ToolbarBuilder()
 
     abstract fun subscribeOnState(state: IViewModelState)
 
@@ -51,6 +56,54 @@ abstract class BaseActivity<T : BaseViewModel<out IViewModelState>> : AppCompatA
                     navigationCommand.options,
                     navigationCommand.extras
                 )
+            }
+        }
+    }
+}
+
+class ToolbarBuilder {
+    var title: String? = null
+    var isBackButtonVisible: Boolean = true
+    var visibility: Boolean = true
+
+    fun setTitle(title: String): ToolbarBuilder {
+        this.title = title
+        return this
+    }
+
+    fun setBackButtonVisible(isVisible: Boolean): ToolbarBuilder {
+        this.isBackButtonVisible = isVisible
+        return this
+    }
+
+    fun invalidate(): ToolbarBuilder {
+        this.title = null
+        this.isBackButtonVisible = true
+        this.visibility = true
+        return this
+    }
+
+    fun prepare(prepareFn: (ToolbarBuilder.() -> Unit)?): ToolbarBuilder {
+        prepareFn?.invoke(this)
+        return this
+    }
+
+    fun build(context: FragmentActivity) {
+
+        with(context.toolbar) {
+            toolbar.visible(this@ToolbarBuilder.visibility)
+
+            if (this@ToolbarBuilder.visibility) {
+                if (this@ToolbarBuilder.title != null) {
+                    toolbar.title = this@ToolbarBuilder.title
+                }
+
+                if (this@ToolbarBuilder.isBackButtonVisible.not()) {
+                    this.navigationIcon = null
+                } else {
+                    val drawable = ResourcesCompat.getDrawable(resources, R.drawable.ic_back, null)
+                    this.navigationIcon = drawable
+                }
             }
         }
     }

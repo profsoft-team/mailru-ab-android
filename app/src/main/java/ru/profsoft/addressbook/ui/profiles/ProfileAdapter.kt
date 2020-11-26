@@ -6,8 +6,11 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.main.item_profile.*
+import kotlinx.android.synthetic.main.item_profile.iv_avatar
+import kotlinx.android.synthetic.main.item_profile.tv_name
 import ru.profsoft.addressbook.R
 import ru.profsoft.addressbook.data.models.Profile
+import java.util.*
 
 class ProfileAdapter(
     val listener : (Profile) -> Unit
@@ -41,10 +44,17 @@ class ProfileAdapter(
 
     inner class ProfileViewHolder(convertView: View) : ViewHolder(convertView), LayoutContainer {
         override fun bind(item: Profile) {
-            iv_avatar.setImageBitmap(item.image)
+            if(item.image == null)
+                iv_avatar.setInitials(item.name[0].toString().toUpperCase(Locale.getDefault()))
+            else
+                iv_avatar.setImageBitmap(item.image)
             tv_name.text = item.name
             if (item.phones.isNotEmpty())
                 tv_phone_number.text = item.phones[0]
+
+            itemView.setOnClickListener {
+                listener.invoke(item)
+            }
         }
     }
 }

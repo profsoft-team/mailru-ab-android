@@ -2,6 +2,7 @@ package ru.profsoft.addressbook.data.repositories
 
 import android.app.Application
 import android.content.ContentUris
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.provider.ContactsContract
 import androidx.lifecycle.LiveData
@@ -9,6 +10,7 @@ import androidx.lifecycle.MutableLiveData
 import ru.profsoft.addressbook.data.models.Profile
 import ru.profsoft.addressbook.extensions.checkReadContactsPermission
 import java.io.BufferedInputStream
+import java.io.IOException
 
 class ProfilesRepository(
     private val application: Application
@@ -73,11 +75,16 @@ class ProfilesRepository(
                             }
                         }
 
-                        val id = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup._ID))
-                        val contactUri = ContentUris.withAppendedId(contentUrl, id.toLong())
-                        val photoStream = ContactsContract.Contacts.openContactPhotoInputStream(application.contentResolver, contactUri)
-                        val bufferInputStream = BufferedInputStream(photoStream)
-                        val bitmap = BitmapFactory.decodeStream(bufferInputStream)
+                        var bitmap: Bitmap? = null
+                        try {
+                            val id = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup._ID))
+                            val contactUri = ContentUris.withAppendedId(contentUrl, id.toLong())
+                            val photoStream = ContactsContract.Contacts.openContactPhotoInputStream(application.contentResolver, contactUri)
+                            val bufferInputStream = BufferedInputStream(photoStream)
+                            bitmap = BitmapFactory.decodeStream(bufferInputStream)
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
 
                         val profile = Profile(
                             name = name,
