@@ -1,14 +1,16 @@
 package ru.profsoft.addressbook.data.repositories
 
 import android.app.Application
+import android.content.ContentUris
+import android.graphics.BitmapFactory
 import android.provider.ContactsContract
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import ru.profsoft.addressbook.data.models.Profile
 import ru.profsoft.addressbook.extensions.checkReadContactsPermission
+import java.io.BufferedInputStream
 
-class ProfilesRepository (
+class ProfilesRepository(
     private val application: Application
 ) : IProfilesRepository {
 
@@ -45,21 +47,44 @@ class ProfilesRepository (
                             ""
                         }
 
-                        val currentCasPhoneNumber = Integer.parseInt(cursor.getString(cursor.getColumnIndex(hasPhoneNumber)))
+                        val currentCasPhoneNumber = Integer.parseInt(
+                            cursor.getString(
+                                cursor.getColumnIndex(
+                                    hasPhoneNumber
+                                )
+                            )
+                        )
                         if (currentCasPhoneNumber > 0) {
-                            val phoneCursor = contentResolver.query(phoneContentUri, null,
-                                "$phoneContactId = ?", arrayOf(currentContactId), null)
+                            val phoneCursor = contentResolver.query(
+                                phoneContentUri, null,
+                                "$phoneContactId = ?", arrayOf(currentContactId), null
+                            )
                             if (phoneCursor != null) {
                                 while (phoneCursor.moveToNext()) {
-                                    phoneNumber?.add(phoneCursor.getString(phoneCursor.getColumnIndex(contactPhoneNumber)))
+                                    phoneNumber?.add(
+                                        phoneCursor.getString(
+                                            phoneCursor.getColumnIndex(
+                                                contactPhoneNumber
+                                            )
+                                        )
+                                    )
                                 }
                                 phoneCursor.close()
                             }
-
-                            val profile = Profile(name = name, phones = (phoneNumber ?: emptyList()).toList(), image = null)
-                            profiles.add(profile)
-                            Log.d("Repo", "getContacts: $profile")
                         }
+
+                        val id = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup._ID))
+                        val contactUri = ContentUris.withAppendedId(contentUrl, id.toLong())
+                        val photoStream = ContactsContract.Contacts.openContactPhotoInputStream(application.contentResolver, contactUri)
+                        val bufferInputStream = BufferedInputStream(photoStream)
+                        val bitmap = BitmapFactory.decodeStream(bufferInputStream)
+
+                        val profile = Profile(
+                            name = name,
+                            phones = (phoneNumber ?: emptyList()).toList(),
+                            image = bitmap
+                        )
+                        profiles.add(profile)
                     }
                 }
             }

@@ -41,7 +41,7 @@ class ProfileAdapter(
 
     inner class ProfileViewHolder(convertView: View) : ViewHolder(convertView), LayoutContainer {
         override fun bind(item: Profile) {
-            iv_avatar
+            iv_avatar.setImageBitmap(item.image)
             tv_name.text = item.name
             if (item.phones.isNotEmpty())
                 tv_phone_number.text = item.phones[0]
