@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.extensions.LayoutContainer
+import kotlinx.android.synthetic.main.item_profile.*
 import ru.profsoft.addressbook.R
 import ru.profsoft.addressbook.data.models.Profile
 
@@ -40,7 +41,10 @@ class ProfileAdapter(
 
     inner class ProfileViewHolder(convertView: View) : ViewHolder(convertView), LayoutContainer {
         override fun bind(item: Profile) {
-
+            iv_avatar
+            tv_name.text = item.name
+            if (item.phones.isNotEmpty())
+                tv_phone_number.text = item.phones[0]
         }
     }
 }

@@ -6,4 +6,5 @@ ext{
     material_version = "1.2.1"
     dagger_version = "2.28.3"
     play_services_version="17.1.0"
+    dagger_version = "2.28.3"
 }
