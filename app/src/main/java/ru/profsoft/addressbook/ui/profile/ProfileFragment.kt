@@ -1,7 +1,6 @@
 package ru.profsoft.addressbook.ui.profile
 
 import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_profile.*
 import ru.profsoft.addressbook.App
@@ -41,7 +40,6 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
         phoneNumberAdapter = PhoneNumberAdapter(phones)
 
         rv_phone_number.apply {
-            addItemDecoration(DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL))
             layoutManager = LinearLayoutManager(requireContext())
             adapter = phoneNumberAdapter
         }

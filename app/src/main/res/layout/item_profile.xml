@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="@dimen/standart_margin_16dp"
+    android:paddingTop="@dimen/standart_margin_16dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
@@ -10,18 +10,20 @@
         android:id="@+id/iv_avatar"
         android:layout_width="60dp"
         android:layout_height="60dp"
+        android:layout_marginStart="@dimen/standart_margin_16dp"
+        android:layout_marginBottom="@dimen/standart_margin_16dp"
+        app:cv_borderColor="@color/colorPrimaryDark"
+        app:cv_borderWidth="2dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:cv_borderColor="@color/colorPrimaryDark"
-        app:cv_borderWidth="2dp"
-        tools:background="@mipmap/ic_launcher"
-        />
+        tools:background="@mipmap/ic_launcher" />
 
     <TextView
         android:id="@+id/tv_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/standart_margin_16dp"
         android:layout_marginStart="@dimen/standart_margin_16dp"
         style="@style/Text.Bold"
         app:layout_constraintStart_toEndOf="@id/iv_avatar"
@@ -32,15 +34,25 @@
 
     <TextView
         android:id="@+id/tv_phone_number"
+        style="@style/Text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/standart_margin_16dp"
-        style="@style/Text"
-        app:layout_constraintStart_toEndOf="@id/iv_avatar"
+        android:layout_marginEnd="@dimen/standart_margin_16dp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/iv_avatar"
         app:layout_constraintTop_toBottomOf="@id/tv_name"
+        tools:text="8(100)100-10-10" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorAccent"
+        android:layout_marginStart="@dimen/standart_margin_16dp"
+        android:layout_marginEnd="@dimen/standart_margin_16dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        tools:text="8(100)100-10-10"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
