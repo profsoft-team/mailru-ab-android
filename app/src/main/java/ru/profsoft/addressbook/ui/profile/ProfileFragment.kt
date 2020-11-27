@@ -33,11 +33,12 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
             iv_avatar.setInitials(profile.name[0].toString().toUpperCase(Locale.getDefault()))
         else
             iv_avatar.setImageBitmap(profile.image)
+
         tv_name.text = profile.name
     }
 
-    private fun initAdapter(phones: List<String>) {
-        phoneNumberAdapter = PhoneNumberAdapter(phones)
+    private fun initAdapter(phones: List<String>?) {
+        phoneNumberAdapter = PhoneNumberAdapter(phones ?: emptyList())
 
         rv_phone_number.apply {
             layoutManager = LinearLayoutManager(requireContext())
