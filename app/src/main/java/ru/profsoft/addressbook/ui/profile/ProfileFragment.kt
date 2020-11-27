@@ -3,6 +3,8 @@ package ru.profsoft.addressbook.ui.profile
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_profile.*
+import kotlinx.android.synthetic.main.fragment_profile.iv_avatar
+import kotlinx.android.synthetic.main.fragment_profile.tv_name
 import ru.profsoft.addressbook.App
 import ru.profsoft.addressbook.R
 import ru.profsoft.addressbook.data.models.Profile
@@ -29,8 +31,12 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
         val profile = requireArguments().get("profile") as Profile
         initAdapter(profile.phones)
 
-        if(profile.image == null)
-            iv_avatar.setInitials(profile.name[0].toString().toUpperCase(Locale.getDefault()))
+        if(profile.image == null) {
+            if (profile.name != null && profile.name.isNotEmpty()) {
+                val initial = profile.name[0].toString().toUpperCase(Locale.getDefault())
+                iv_avatar.setInitials(initial)
+            }
+        }
         else
             iv_avatar.setImageBitmap(profile.image)
 

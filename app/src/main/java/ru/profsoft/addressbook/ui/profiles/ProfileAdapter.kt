@@ -45,8 +45,12 @@ class ProfileAdapter(
     inner class ProfileViewHolder(convertView: View) : ViewHolder(convertView), LayoutContainer {
         override fun bind(item: Profile) {
 
-            if(item.image == null)
-                iv_avatar.setInitials(item.name[0].toString().toUpperCase(Locale.getDefault()))
+            if(item.image == null) {
+                if (item.name != null && item.name.isNotEmpty()) {
+                    val initial = item.name[0].toString().toUpperCase(Locale.getDefault())
+                    iv_avatar.setInitials(initial)
+                }
+            }
             else
                 iv_avatar.setImageBitmap(item.image)
 

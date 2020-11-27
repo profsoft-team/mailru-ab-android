@@ -7,7 +7,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.provider.ContactsContract
 import android.provider.ContactsContract.CommonDataKinds.Phone
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import ru.profsoft.addressbook.data.models.Profile
@@ -17,13 +16,14 @@ import java.io.IOException
 class ProfilesRepository(
     private val application: Application
 ) : IProfilesRepository {
+    var isInit: Boolean = false
 
     private val contacts = MutableLiveData<List<Profile>>()
 
     override fun getContactList(): LiveData<List<Profile>> = contacts
 
     override fun getContacts(){
-        if (application.checkReadContactsPermission()) {
+        if (application.checkReadContactsPermission() && isInit.not()) {
             val contentUrl = ContactsContract.Contacts.CONTENT_URI
             val profiles = mutableListOf<Profile>()
 
@@ -48,7 +48,6 @@ class ProfilesRepository(
                     phones[contactId] = phoneList
                 }
                 phoneList.add(phone)
-                Log.d("Contacts", "getContacts:$contactId $phoneList")
             }
             cursor?.close()
 
@@ -87,6 +86,7 @@ class ProfilesRepository(
             }
             cursor?.close()
             contacts.value = profiles
+            isInit = true
         }
     }
 }
