@@ -44,12 +44,14 @@ class ProfileAdapter(
 
     inner class ProfileViewHolder(convertView: View) : ViewHolder(convertView), LayoutContainer {
         override fun bind(item: Profile) {
+
             if(item.image == null)
                 iv_avatar.setInitials(item.name[0].toString().toUpperCase(Locale.getDefault()))
             else
                 iv_avatar.setImageBitmap(item.image)
+
             tv_name.text = item.name
-            if (item.phones.isNotEmpty())
+            if (item.phones != null && item.phones.isNotEmpty())
                 tv_phone_number.text = item.phones[0]
 
             itemView.setOnClickListener {
