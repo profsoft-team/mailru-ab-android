@@ -16,16 +16,16 @@ class ProfilesViewModel(
     private val profilesRepository: IProfilesRepository
 ) : BaseViewModel<ProfilesState>(handle, ProfilesState()) {
 
-    init {
-        profilesRepository.getContacts()
-    }
-
     private val profiles = Transformations.switchMap(state) {
         return@switchMap profilesRepository.getContactList()
     }
 
     fun observeProfiles(owner: LifecycleOwner, onChange: (List<Profile>) -> Unit) {
         profiles.observe(owner, Observer { onChange(it) })
+    }
+
+    fun getContacts() {
+        profilesRepository.getContacts()
     }
 }
 
