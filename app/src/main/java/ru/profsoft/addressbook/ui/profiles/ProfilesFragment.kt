@@ -1,7 +1,11 @@
 package ru.profsoft.addressbook.ui.profiles
 
-import android.Manifest
-import android.content.pm.PackageManager
+import android.content.Context
+import android.content.Intent
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.ActivityResultRegistry
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
@@ -11,6 +15,7 @@ import ru.profsoft.addressbook.App
 import ru.profsoft.addressbook.R
 import ru.profsoft.addressbook.ui.base.BaseFragment
 import ru.profsoft.addressbook.ui.base.ToolbarBuilder
+import ru.profsoft.addressbook.viewmodels.PendingAction
 import ru.profsoft.addressbook.viewmodels.ProfilesViewModel
 import ru.profsoft.addressbook.viewmodels.ProfilesViewModelFactory
 import ru.profsoft.addressbook.viewmodels.base.NavigationCommand
@@ -36,6 +41,18 @@ class ProfilesFragment : BaseFragment<ProfilesViewModel>() {
             .setBackButtonVisible(false)
     }
     private lateinit var profileAdapter: ProfileAdapter
+    private lateinit var resultRegistry: ActivityResultRegistry
+    lateinit var permissionLauncher: ActivityResultLauncher<Array<out String>>
+    lateinit var settingsLauncher: ActivityResultLauncher<Intent>
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        if (::resultRegistry.isInitialized.not()) resultRegistry = requireActivity().activityResultRegistry
+
+        permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions(), resultRegistry, ::callbackPermissions)
+        settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult(), resultRegistry, ::callbackSettings)
+    }
 
     override fun setupViews() {
         initAdapter()
@@ -44,23 +61,17 @@ class ProfilesFragment : BaseFragment<ProfilesViewModel>() {
             profileAdapter.updateData(it)
         }
 
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(Manifest.permission.READ_CONTACTS), PERMISSIONS_REQUEST)
-            return
-        } else {
-            viewModel.getContacts()
+        viewModel.observePermissions(viewLifecycleOwner) {
+            permissionLauncher.launch(it.toTypedArray())
         }
-    }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        when (requestCode) {
-            PERMISSIONS_REQUEST -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    viewModel.getContacts()
-                }
-                return
+        viewModel.observeActivityResults(viewLifecycleOwner) {
+            when(it) {
+                is PendingAction.SettingsAction -> settingsLauncher.launch(it.payload)
             }
         }
+
+        viewModel.showPermissionDialog()
     }
 
     private fun initAdapter() {
@@ -75,7 +86,19 @@ class ProfilesFragment : BaseFragment<ProfilesViewModel>() {
         }
     }
 
-    companion object {
-        private const val PERMISSIONS_REQUEST = 1
+    private fun callbackSettings(result: ActivityResult) {
+        viewModel.getContacts()
+    }
+
+    private fun callbackPermissions(result: Map<String, Boolean>) {
+        val permissionResult = result.mapValues { (permission, isGranted) ->
+            if (isGranted) true to true
+            else false to ActivityCompat.shouldShowRequestPermissionRationale(
+                requireActivity(),
+                permission
+            )
+        }
+
+        viewModel.handlePermission(permissionResult)
     }
 }

@@ -13,6 +13,7 @@ import ru.profsoft.addressbook.extensions.visible
 import ru.profsoft.addressbook.viewmodels.base.BaseViewModel
 import ru.profsoft.addressbook.viewmodels.base.IViewModelState
 import ru.profsoft.addressbook.viewmodels.base.NavigationCommand
+import ru.profsoft.addressbook.viewmodels.base.Notify
 
 abstract class BaseActivity<T : BaseViewModel<out IViewModelState>> : AppCompatActivity() {
     protected abstract val viewModel: T
@@ -21,6 +22,7 @@ abstract class BaseActivity<T : BaseViewModel<out IViewModelState>> : AppCompatA
     val toolbarBuilder = ToolbarBuilder()
 
     abstract fun subscribeOnState(state: IViewModelState)
+    abstract fun renderNotification(notify: Notify)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,6 +31,7 @@ abstract class BaseActivity<T : BaseViewModel<out IViewModelState>> : AppCompatA
         supportActionBar?.setDisplayShowTitleEnabled(false)
         viewModel.observeState(this) { subscribeOnState(it) }
         viewModel.observeNavigation(this) { subscribeOnNavigation(it) }
+        viewModel.observeNotifications(this) { renderNotification(it) }
 
         navController = findNavController(R.id.nav_host_fragment)
     }

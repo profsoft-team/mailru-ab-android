@@ -31,11 +31,6 @@ abstract class BaseFragment<T : BaseViewModel<out IViewModelState>> : Fragment()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        main.toolbarBuilder
-            .invalidate()
-            .prepare(prepareToolbar)
-            .build(main)
-
         viewModel.restoreState()
         binding?.restoreUi(savedInstanceState)
 
@@ -43,9 +38,17 @@ abstract class BaseFragment<T : BaseViewModel<out IViewModelState>> : Fragment()
 
         if(binding?.isInflated == false) binding?.onFinishInflate()
 
-        viewModel.observeNavigation(viewLifecycleOwner) {
-            main.viewModel.navigate(it)
-        }
+        viewModel.observeNavigation(viewLifecycleOwner) { main.viewModel.navigate(it) }
+        viewModel.observeNotifications(viewLifecycleOwner) { main.renderNotification(it) }
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+
+        main.toolbarBuilder
+            .invalidate()
+            .prepare(prepareToolbar)
+            .build(main)
 
         toolbar.setNavigationOnClickListener {
             main.navController.popBackStack()
