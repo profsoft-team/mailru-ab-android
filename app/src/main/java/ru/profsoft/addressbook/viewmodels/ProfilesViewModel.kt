@@ -1,23 +1,33 @@
 package ru.profsoft.addressbook.viewmodels
 
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.Observer
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.Transformations
+import android.Manifest
+import android.content.Intent
+import android.net.Uri
+import android.os.Parcelable
+import android.provider.Settings
+import androidx.lifecycle.*
+import kotlinx.android.parcel.Parcelize
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.profsoft.addressbook.data.models.Profile
 import ru.profsoft.addressbook.data.repositories.IProfilesRepository
-import ru.profsoft.addressbook.viewmodels.base.BaseViewModel
-import ru.profsoft.addressbook.viewmodels.base.IViewModelFactory
-import ru.profsoft.addressbook.viewmodels.base.IViewModelState
+import ru.profsoft.addressbook.viewmodels.base.*
 import javax.inject.Inject
 
 class ProfilesViewModel(
     handle: SavedStateHandle,
     private val profilesRepository: IProfilesRepository
 ) : BaseViewModel<ProfilesState>(handle, ProfilesState()) {
+    private val activityResult = MutableLiveData<Event<PendingAction>>()
+    private val readContactsPermission = listOf(
+        Manifest.permission.READ_CONTACTS
+    )
 
-    private val profiles = Transformations.switchMap(state) {
-        return@switchMap profilesRepository.getContactList()
+    private val profiles: MutableLiveData<List<Profile>> = MutableLiveData()
+
+    fun observeActivityResults(owner: LifecycleOwner, handler: (action: PendingAction) -> Unit) {
+        activityResult.observe(owner, EventObserver { handler(it) })
     }
 
     fun observeProfiles(owner: LifecycleOwner, onChange: (List<Profile>) -> Unit) {
@@ -25,7 +35,48 @@ class ProfilesViewModel(
     }
 
     fun getContacts() {
-        profilesRepository.getContacts()
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val contacts = profilesRepository.getContacts()
+                profiles.postValue(contacts)
+            }
+        }
+    }
+
+    fun handlePermission(permissionResult: Map<String, Pair<Boolean, Boolean>>) {
+        val isAllGranted = permissionResult.values.map { it.first }.contains(false).not()
+        val isAllMayBeShown = permissionResult.values.map { it.second }.contains(false).not()
+
+        when {
+            isAllGranted -> getContacts()
+            isAllMayBeShown.not() -> executeOpenSettings()
+            else -> {
+                val message = Notify.Message(
+                    "Need permissions for reading address book",
+                    "Retry"
+                ) { requestPermissions(readContactsPermission) }
+
+                notify(message)
+            }
+        }
+    }
+
+    fun showPermissionDialog() {
+        requestPermissions(readContactsPermission)
+    }
+
+    private fun executeOpenSettings() {
+        val handler = {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.parse("package:ru.profsoft.addressbook")
+            }
+            startForResult(PendingAction.SettingsAction(intent))
+        }
+        notify(Notify.Message("Need permissions for reading address book", "Open settings", handler))
+    }
+
+    private fun startForResult(action: PendingAction) {
+        activityResult.value = Event(action)
     }
 }
 
@@ -37,4 +88,21 @@ class ProfilesViewModelFactory @Inject constructor(
     }
 }
 
-class ProfilesState : IViewModelState
+data class ProfilesState(
+    val pendingAction: PendingAction? = null
+) : IViewModelState {
+    override fun save(outState: SavedStateHandle) {
+        outState.set("pendingAction", pendingAction)
+    }
+
+    override fun restore(savedState: SavedStateHandle): IViewModelState {
+        return copy(pendingAction = savedState["pendingAction"])
+    }
+}
+
+sealed class PendingAction : Parcelable {
+    abstract val payload: Any?
+
+    @Parcelize
+    data class SettingsAction(override val payload: Intent) : PendingAction()
+}
