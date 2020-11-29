@@ -2,6 +2,7 @@ package ru.profsoft.addressbook.ui.profiles
 
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
@@ -10,9 +11,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_profiles.*
 import ru.profsoft.addressbook.App
 import ru.profsoft.addressbook.R
+import ru.profsoft.addressbook.extensions.checkReadContactsPermission
 import ru.profsoft.addressbook.ui.base.BaseFragment
 import ru.profsoft.addressbook.ui.base.ToolbarBuilder
 import ru.profsoft.addressbook.viewmodels.PendingAction
@@ -79,6 +82,7 @@ class ProfilesFragment : BaseFragment<ProfilesViewModel>() {
             val bundle = bundleOf("profile" to it)
             viewModel.navigate(NavigationCommand.To(R.id.profileFragment, bundle))
         }
+        profileAdapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
 
         rv_profiles.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -87,7 +91,8 @@ class ProfilesFragment : BaseFragment<ProfilesViewModel>() {
     }
 
     private fun callbackSettings(result: ActivityResult) {
-        viewModel.getContacts()
+        if (requireContext().checkReadContactsPermission())
+            viewModel.getContacts()
     }
 
     private fun callbackPermissions(result: Map<String, Boolean>) {

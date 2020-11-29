@@ -7,6 +7,9 @@ import android.os.Parcelable
 import android.provider.Settings
 import androidx.lifecycle.*
 import kotlinx.android.parcel.Parcelize
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.profsoft.addressbook.data.models.Profile
 import ru.profsoft.addressbook.data.repositories.IProfilesRepository
 import ru.profsoft.addressbook.viewmodels.base.*
@@ -21,9 +24,7 @@ class ProfilesViewModel(
         Manifest.permission.READ_CONTACTS
     )
 
-    private val profiles = Transformations.switchMap(state) {
-        return@switchMap profilesRepository.getContactList()
-    }
+    private val profiles: MutableLiveData<List<Profile>> = MutableLiveData()
 
     fun observeActivityResults(owner: LifecycleOwner, handler: (action: PendingAction) -> Unit) {
         activityResult.observe(owner, EventObserver { handler(it) })
@@ -34,7 +35,12 @@ class ProfilesViewModel(
     }
 
     fun getContacts() {
-        profilesRepository.getContacts()
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val contacts = profilesRepository.getContacts()
+                profiles.postValue(contacts)
+            }
+        }
     }
 
     fun handlePermission(permissionResult: Map<String, Pair<Boolean, Boolean>>) {

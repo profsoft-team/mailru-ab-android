@@ -4,6 +4,6 @@ import androidx.lifecycle.LiveData
 import ru.profsoft.addressbook.data.models.Profile
 
 interface IProfilesRepository {
-    fun getContacts()
+    suspend fun getContacts(): List<Profile>
     fun getContactList(): LiveData<List<Profile>>
 }
