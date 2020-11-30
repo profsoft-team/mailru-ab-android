@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/mobile_navigation"
+    app:startDestination="@id/profilesFragment">
+
+    <fragment
+        android:id="@+id/profilesFragment"
+        android:name="ru.profsoft.addressbook.ui.profiles.ProfilesFragment"
+        android:label="ProfilesFragment" >
+        <action
+            android:id="@+id/action_profilesFragment_to_profileFragment"
+            app:destination="@id/profileFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="ru.profsoft.addressbook.ui.profile.ProfileFragment"
+        android:label="ProfileFragment" />
+</navigation>
